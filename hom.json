@@ -1,0 +1,18 @@
+{
+  "extends": "./cypress.json",
+  "baseUrl": "https://www.saucedemo.com",
+  "apiBaseUrl": "https://api.publicapis.org/entries",
+  "username": "standard_user",
+  "password": "secret_sauce",
+  "elements": "data-auth-cy",
+  "chromeWebSecurity": false,
+  "defaultCommandTimeout": 28000,
+  "video": false,
+  "screenshotOnRunFailure": false,
+  "reporterOptions": {
+    "mochaFile": "results-[hash].xml",
+    "toConsole": true
+  },
+  "experimental": true,
+  "disableWebdriverStepsReporting": true
+}

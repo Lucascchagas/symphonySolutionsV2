@@ -1,0 +1,84 @@
+# Define pipeline stages
+stages:
+  - install_dependencies  # Define pipeline stages
+  - test_dev  # Install project dependencies
+  - test_staging  # Run tests in the development environment
+  - generate_report  # Run tests in the staging environment (homologation)
+  - cleanup  # Generate Allure report for the development environment (only on the 'master' branch)
+
+# Define variables
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_IMAGE: cypress/base:10  # Use a Cypress Docker image que inclui Cypress e Node.js 10
+
+# Install project dependencies
+install_dependencies:
+  stage: install_dependencies
+  image: $DOCKER_IMAGE
+  cache:
+    paths:
+      - node_modules/
+      - ~/.cache/Cypress/
+  script:
+    - apt-get update
+    - apt-get install -y nodejs npm
+    - npm install
+    - npm install faker 
+    - npm install @faker-js/faker  
+  artifacts:
+    paths:
+      - node_modules/
+
+before_script:
+  - npm ci
+
+# Run tests in the development environment
+test_dev:
+  stage: test_dev
+  image: $DOCKER_IMAGE
+  script:
+    - mkdir -p allure-results  
+    - npm run cy:run:dev:headless
+  artifacts:
+    paths:
+      - allure-results/allure-report-dev
+  cache:
+    paths:
+      - node_modules/
+      - allure-results/  
+
+# Run tests in the staging environment (homologation)
+test_staging:
+  stage: test_staging
+  image: $DOCKER_IMAGE
+  script:
+    - mkdir -p allure-results  
+    - npm run cy:run:hom:headless
+  artifacts:
+    paths:
+      - allure-results/allure-report-hom
+  cache:
+    paths:
+      - node_modules/
+      - allure-results/  
+
+
+# Generate Allure report for the development environment (only on the 'master' branch)
+generate_report_dev:
+  stage: generate_report
+  image: $DOCKER_IMAGE
+  script:
+    - npm run allure:generate:dev
+  only:
+    - master
+
+# Generate Allure report for the staging environment (only on the 'staging' branch)
+generate_report_staging:
+  stage: generate_report
+  image: $DOCKER_IMAGE
+  script:
+    - npm run allure:generate:hom
+  only:
+    - staging
+
+
